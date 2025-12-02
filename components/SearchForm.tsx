@@ -1,4 +1,9 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+
 export default function SearchForm() {
+  const router = useRouter();
   // SVGコンポーネントとして定義しておくと再利用しやすいです（ファイル内で定義してもOK）
   const SearchIcon = ({ className }: { className?: string }) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
@@ -71,7 +76,10 @@ export default function SearchForm() {
 
       {/* 検索ボタン */}
       <div className="pt-4 flex justify-center">
-        <button className="bg-app-blue w-4/5 py-3 rounded-full shadow-md flex items-center justify-center gap-2 hover:opacity-90 transition">
+        <button
+          onClick={() => router.push('/seachpage')}
+          className="bg-app-blue w-4/5 py-3 rounded-full shadow-md flex items-center justify-center gap-2 hover:opacity-90 transition"
+        >
           <SearchIcon className="w-5 h-5 text-gray-600" />
           <span className="text-gray-700 font-bold">この条件で検索</span>
         </button>
