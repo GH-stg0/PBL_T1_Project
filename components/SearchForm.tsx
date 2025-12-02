@@ -1,9 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css"; 
 
 export default function SearchForm() {
   const router = useRouter();
+
+  const [date, setDate] = useState<Date | null>(null);
+  const [showCalendar, setShowCalendar] = useState(false);
+  
   // SVGコンポーネントとして定義しておくと再利用しやすいです（ファイル内で定義してもOK）
   const SearchIcon = ({ className }: { className?: string }) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
@@ -62,15 +69,52 @@ export default function SearchForm() {
       <section>
         <h2 className="font-bold mb-2 ml-1">発見日時</h2>
         <div className="relative w-full">
-          <button className="w-full flex items-center bg-app-input border border-gray-400 rounded-full py-2 px-3 text-gray-600 shadow-sm">
-            {/* カレンダーアイコン */}
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6 mr-3 text-gray-700">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
-            </svg>
-            <span>カレンダーから選択</span>
-          </button>
+          <button
+    onClick={() => setShowCalendar(true)}
+  className="w-full flex items-center bg-app-input border border-gray-400 rounded-full py-2 px-3 text-gray-600 shadow-sm"
+>
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+    strokeWidth={1.5} stroke="currentColor"
+    className="h-6 w-6 mr-3 text-gray-700"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M6.75 3v2.25M17.25 3v2.25M3 8.25h18M4.5
+         7.5h15a2.25 2.25 0 0 1 2.25 2.25v9a2.25 2.25 0 0 1-2.25 2.25h-15A2.25
+         2.25 0 0 1 2.25 18.75v-9A2.25 2.25 0 0 1 4.5 7.5z"
+    />
+  </svg>
+
+  <span>
+    {date ? date.toLocaleDateString("ja-JP") : "カレンダーから選択"}
+  </span>
+</button>
         </div>
       </section>
+
+      {/* カレンダーモーダル */}
+      {showCalendar && (
+        <div
+          className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50"
+          onClick={() => setShowCalendar(false)}  // 背景クリックで閉じる
+        >
+          <div
+            className="bg-white p-4 rounded-xl shadow-lg"
+            onClick={(e) => e.stopPropagation()} // カレンダー押した時に閉じない
+          >
+            <DatePicker
+              selected={date}
+              onChange={(selected) => {
+                setDate(selected);
+                setShowCalendar(false); // 選択後閉じる
+              }}
+              inline
+              locale="ja"
+            />
+          </div>
+        </div>
+      )}
 
       <hr className="border-gray-400" />
 
