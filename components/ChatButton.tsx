@@ -1,6 +1,6 @@
 export default function ChatButton() {
   return (
-    <div className="absolute bottom-4 left-0 w-full px-4 flex items-center gap-2">
+  <div className="absolute bottom-6 left-0 w-full px-4 flex justify-end">
       <div className="flex-1 bg-app-input border border-gray-400 h-12 rounded-full shadow-sm"></div>
       
       <button className="bg-white p-2 rounded-md border border-gray-300 shadow-sm hover:bg-gray-50">
