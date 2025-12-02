@@ -18,15 +18,9 @@ export default function SearchForm() {
              <SearchIcon className="w-4 h-4 text-gray-500" />
              <span className="text-sm font-bold">財布</span>
           </button>
-
-          {/* 傘 */}
-          <button className="flex items-center justify-center gap-2 bg-app-input border border-gray-400 rounded-full py-2 px-1 shadow-sm active:scale-95 transition">
-            <SearchIcon className="w-4 h-4 text-gray-500" />
-            <span className="text-sm font-bold">傘</span>
-          </button>
           
           {/* 空ボタン */}
-          {[...Array(4)].map((_, i) => (
+          {[...Array(5)].map((_, i) => (
             <button key={i} className="flex items-center justify-center bg-app-input border border-gray-300 rounded-full py-2 shadow-sm">
               <SearchIcon className="w-4 h-4 text-gray-400" />
             </button>
