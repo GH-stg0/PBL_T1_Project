@@ -8,3 +8,16 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Ensure there is at least an anonymous session for public reads.
+export async function ensureAnonSession() {
+  if (typeof window === 'undefined') return;
+
+  const { data, error } = await supabase.auth.getSession();
+  if (error) throw error;
+
+  if (!data.session) {
+    const { error: anonError } = await supabase.auth.signInAnonymously();
+    if (anonError) throw anonError;
+  }
+}

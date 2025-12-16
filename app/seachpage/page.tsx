@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { supabase } from '../../lib/supabase';
 import ChatButton from '../../components/ChatButton';
+import { ensureAnonSession, supabase } from '../../lib/supabase';
 
 type LostItem = {
   id: number;
@@ -55,6 +55,8 @@ export default function SeachPage() {
       try {
         setLoading(true);
         setError(null);
+
+        await ensureAnonSession();
 
         const { data, error } = await supabase
           .from('lost_items')
