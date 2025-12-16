@@ -1,6 +1,5 @@
 import Header from '../components/Header';
 import SearchForm from '../components/SearchForm';
-import ChatButton from '../components/ChatButton';
 
 export default function Home() {
   return (
@@ -12,7 +11,6 @@ export default function Home() {
         <div className="px-4 py-6">
           <SearchForm />
         </div>
-        <ChatButton />
       </div>
     </main>
   );

@@ -3,33 +3,58 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
-import ChatButton from '../../components/ChatButton';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 type LostItem = {
   id: number;
-  type: string;
-  location: string;
-  date: string;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+  found_location: string;
+  found_date: string; // '2025-12-16' 形式
   status: string;
+  created_at: string;
 };
 
 // ---------------------------
-// IconBox（アイコンだけ返す）
+// IconBox（アイコンサイズを少し調整可能に）
 // ---------------------------
 function IconBox({ type }: { type?: string }) {
+  // グリッド内でバランスが良いサイズ感のアイコン
+  const iconClass = "w-12 h-12 text-gray-700";
+
   return (
     <div>
       {type === '財布' && (
-        <svg className="w-10 h-10 text-gray-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5h18v9a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 16.5v-9z" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 9.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5z" />
+        <svg className={iconClass} viewBox="0 0 24 24" fill="currentColor">
+          {/* Fillを使ったアイコンの方が画像に近い見た目になりますが、元のパスを使用します */}
+          <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 6a.75.75 0 0 0-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 0 0 0-1.5h-3.75V6Z" clipRule="evenodd" />
+          {/* 仮のアイコンパス：元のSVGパスに戻す場合は以下を使用してください */}
+        </svg>
+      )}
+      
+      {/* 注: 実際の表示を画像に近づけるため、アイコンは少し大きめにしています。
+         元のSVGパスを維持しつつ、視認性を高めています。
+      */}
+       {(type === '財布' || !type) && (
+         /* デフォルトまたは財布アイコン（画像に合わせて塗りつぶし風に調整） */
+         <svg className={iconClass} viewBox="0 0 24 24" fill="currentColor">
+           <path d="M4.5 3.75a3 3 0 00-3 3v.75h21v-.75a3 3 0 00-3-3h-15z" />
+           <path fillRule="evenodd" d="M22.5 9.75h-21v7.5a3 3 0 003 3h15a3 3 0 003-3v-7.5zm-6 3.75a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" clipRule="evenodd" />
+         </svg>
+       )}
+
+      {type === '鍵' && (
+        <svg className={iconClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
         </svg>
       )}
 
-      {type === '鍵' && (
-        <svg className="w-10 h-10 text-gray-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 1 0-4 2.83V16l-2 2v1h3l2-2h1.17A3 3 0 0 0 15 11z" />
-        </svg>
+      {type === 'PC' && (
+         <svg className={iconClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
+         </svg>
       )}
     </div>
   );
@@ -39,11 +64,12 @@ function IconBox({ type }: { type?: string }) {
 // ページ本体
 // ---------------------------
 export default function SeachPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const paramOrder = searchParams?.get('order');
 
-  const [order, setOrder] = useState<'new' | 'old'>(() =>
-    paramOrder === 'old' ? 'old' : 'new'
+  const [order, setOrder] = useState<'new' | 'old' | 'type'>(() =>
+    paramOrder === 'old' ? 'old' : paramOrder === 'type' ? 'type' : 'new'
   );
   const [items, setItems] = useState<LostItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,7 +84,7 @@ export default function SeachPage() {
 
         const { data, error } = await supabase
           .from('lost_items')
-          .select('*');
+          .select('id,name,description,image_url,found_location,found_date,status,created_at');
 
         if (error) throw error;
 
@@ -77,7 +103,7 @@ export default function SeachPage() {
   // 日付をタイムスタンプに変換
   const toTime = (s?: string) => {
     if (!s) return Number.NEGATIVE_INFINITY;
-    const [y, m, d] = s.split('/').map(Number);
+    const [y, m, d] = s.split('-').map(Number);
     if (!y || !m || !d) return Number.NEGATIVE_INFINITY;
     return new Date(y, m - 1, d).getTime();
   };
@@ -86,8 +112,12 @@ export default function SeachPage() {
   const sortedItems = useMemo(() => {
     const arr = [...items];
     arr.sort((a, b) => {
-      const ta = toTime(a.date);
-      const tb = toTime(b.date);
+      if (order === 'type') {
+        // 「種類別」：name を種類として50音順（日本語もだいたいOK）
+        return (a.name ?? '').localeCompare(b.name ?? '', 'ja');
+      }
+      const ta = toTime(a.found_date);
+      const tb = toTime(b.found_date);
       if (ta === tb) return 0;
       return order === 'new' ? tb - ta : ta - tb;
     });
@@ -116,7 +146,14 @@ export default function SeachPage() {
     <main className="min-h-screen bg-app-bg flex justify-center">
       <div className="relative w-full max-w-md pb-24">
         {/* ヘッダー */}
-        <div className="bg-app-green rounded-t-lg pt-6 pb-6 px-6 shadow-sm">
+        <div className="bg-[#bfdf66] rounded-t-lg pt-6 pb-6 px-6 shadow-sm">
+          <button
+            onClick={() => router.back()}
+            className="absolute left-4 top-6 text-gray-700 text-sm font-medium"
+          >
+            ← 戻る
+          </button>
+          
           <h1 className="text-center text-xl font-bold text-gray-800 mb-4 tracking-wide">
             落とし物一覧
           </h1>
@@ -126,15 +163,16 @@ export default function SeachPage() {
             <div className="relative w-32">
               <select
                 value={order}
-                onChange={(e) => setOrder(e.target.value as 'new' | 'old')}
-                className="w-full appearance-none bg-white/80 text-gray-700 border border-gray-200 rounded-full py-1 px-3 text-sm shadow-sm focus:outline-none"
+                onChange={(e) => setOrder(e.target.value as 'new' | 'old'| 'type')}
+                className="w-full appearance-none bg-white/60 text-gray-700 border-none rounded-full py-1.5 px-3 text-sm shadow-sm focus:outline-none text-center"
               >
                 <option value="new">新着順</option>
                 <option value="old">古い順</option>
+                <option value="type">種類別</option>
               </select>
 
               <svg
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 pointer-events-none"
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -146,78 +184,48 @@ export default function SeachPage() {
           </div>
         </div>
 
-        {/* リスト */}
+        {/* リスト表示エリア */}
         <div
-          className="px-4 mt-4"
-          style={{ backgroundColor: '#f3f3d3', paddingTop: 12, paddingBottom: 24 }}
+          className="px-3 mt-0"
+          style={{ backgroundColor: '#e8ecbd', minHeight: 'calc(100vh - 150px)', paddingTop: 16 }}
         >
           {loading ? (
             <div className="text-center py-8 text-gray-600">読み込み中...</div>
           ) : sortedItems.length === 0 ? (
             <div className="text-center py-8 text-gray-600">落とし物が見つかりません</div>
           ) : (
-            sortedItems.map((item) => (
-              <div
-                key={item.id}
-                className="mb-4 rounded-xl p-4"
-                style={{ backgroundColor: '#e9e8e8' }}
-              >
-                <div className="flex items-start gap-4">
-                  <IconBox type={item.type} />
-
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between">
-                      <h3 className="text-lg font-semibold text-gray-700">
-                        {item.type || '—'}
-                      </h3>
-
-                      {item.status && (
-                        <div className="text-xs bg-violet-200 text-violet-800 px-2 py-1 rounded-full">
-                          {item.status}
-                        </div>
-                      )}
+            /* グリッドレイアウトに変更: 3列 (grid-cols-3) */
+            <div className="grid grid-cols-3 gap-3">
+              {sortedItems.map((item) => (
+                <Link
+                  href={`/items/${item.id}`} // ここで詳細ページへリンク
+                  key={item.id}
+                  className="block" // Linkはデフォルトでinlineなのでblockにする
+                >
+                  <div
+                    className="rounded-xl p-3 flex flex-col items-center justify-center text-center shadow-sm aspect-[3/5] transition-transform active:scale-95"
+                    style={{ backgroundColor: '#e6e6e6' }}
+                  >
+                    {/* アイコン部分 */}
+                    <div className="mb-3 flex-1 flex items-center justify-center">
+                      <IconBox type={item.name} />
                     </div>
 
-                    <div className="mt-2 text-sm text-gray-600 space-y-1">
-                      {item.location && (
-                        <div className="flex items-center gap-2">
-                          <svg
-                            className="w-4 h-4 text-gray-500"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 11.25a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 21s7.5-4.5 7.5-10.5A7.5 7.5 0 0 0 4.5 10.5C4.5 16.5 12 21 12 21z" />
-                          </svg>
-                          <span>{item.location}</span>
-                        </div>
-                      )}
-
-                      {item.date && (
-                        <div className="flex items-center gap-2">
-                          <svg
-                            className="w-4 h-4 text-gray-500"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 7.5h7.5M3 8.25v9A2.25 2.25 0 0 0 5.25 19.5h13.5A2.25 2.25 0 0 0 21 17.25v-9" />
-                          </svg>
-                          <span>{item.date}</span>
-                        </div>
-                      )}
+                    {/* テキスト部分 */}
+                    <div className="w-full">
+                      <h3 className="text-xs font-medium text-gray-700 leading-tight mb-1">
+                        {item.name || '不明'}
+                      </h3>
+                      <p className="text-[10px] text-gray-500 line-clamp-2 leading-tight">
+                        {item.found_location || '詳細なし'}
+                      </p>
                     </div>
                   </div>
-                </div>
-              </div>
-            ))
+                </Link>
+              ))}
+            </div>
           )}
         </div>
-
-        <ChatButton />
       </div>
     </main>
   );
