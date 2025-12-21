@@ -1,5 +1,6 @@
 import Header from '../components/Header';
 import SearchForm from '../components/SearchForm';
+import Image from 'next/image';
 
 export default function Home() {
   return (
@@ -11,7 +12,17 @@ export default function Home() {
         <div className="px-4 py-6">
           <SearchForm />
         </div>
+        <div className="flex justify-center mt-8">
+          <Image
+            src="/images/icon.png"
+            alt="icon"
+            width={320}
+            height={320}
+            priority
+          />
+        </div>
       </div>
+      <div className="flex justify-center mt-4"></div>
     </main>
   );
 }
