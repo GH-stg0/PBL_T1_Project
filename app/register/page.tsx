@@ -22,31 +22,41 @@ export default function RegisterPage() {
 
   // ② 通常時は登録フォームを表示
   return (
-    <AuthCard
-      title="管理者登録"
-      buttonText="登録する"
-      footerText="ログインはこちら"
-      footerHref="/login"
-      requireConfirmPassword
-      confirmPasswordLabel="パスワード（確認）"
-      onSubmit={async (email, password) => {
-        const supabase = createClient();
+    <div className="min-h-screen bg-[#f3f6d6]">
+      <div className="bg-[#bfdf66] pt-10 pb-4 px-4 sticky top-0 z-10 shadow-sm flex items-center">
+        <button
+          onClick={() => router.back()}
+          className="p-2 -ml-2 text-gray-800"
+        >
+          ←戻る
+        </button>
+      </div>
+      <AuthCard
+        title="管理者登録"
+        buttonText="登録する"
+        footerText="ログインはこちら"
+        footerHref="/login"
+        requireConfirmPassword
+        confirmPasswordLabel="パスワード（確認）"
+        onSubmit={async (email, password) => {
+          const supabase = createClient();
 
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-        });
+          const { error } = await supabase.auth.signUp({
+            email,
+            password,
+          });
 
-        if (error) throw error;
+          if (error) throw error;
 
-        // ③ 成功したらメッセージ表示に切り替え
-        setRegistered(true);
+          // ③ 成功したらメッセージ表示に切り替え
+          setRegistered(true);
 
-        // ④ 少し待ってログイン画面へ
-        setTimeout(() => {
-          router.push("/login");
-        }, 1500);
-      }}
-    />
+          // ④ 少し待ってログイン画面へ
+          setTimeout(() => {
+            router.push("/login");
+          }, 1500);
+        }}
+      />
+    </div>
   );
 }
