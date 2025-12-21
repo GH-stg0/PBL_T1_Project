@@ -6,7 +6,7 @@ export default function Header() {
       {/* 管理者ログインリンク（右上） */}
       <div className="absolute right-4 top-4">
         <Link 
-          href="/admin/login" 
+          href="/login" 
           className="text-sm text-gray-700 hover:underline"
         >
           管理者ログイン

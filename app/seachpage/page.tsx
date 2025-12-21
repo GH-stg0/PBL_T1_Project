@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { supabase } from '../../lib/supabase';
+import { createClient } from "../../utils/supabase/client";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -75,6 +75,7 @@ export default function SeachPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const supabase = createClient();
   // Supabaseからデータ取得
   useEffect(() => {
     const fetchItems = async () => {
