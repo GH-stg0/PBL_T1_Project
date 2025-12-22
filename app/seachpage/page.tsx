@@ -83,9 +83,37 @@ export default function SeachPage() {
         setLoading(true);
         setError(null);
 
-        const { data, error } = await supabase
+        // URLパラメータを取得
+        const locationParam = searchParams.get('location');
+        const dateParam = searchParams.get('date');
+        const categoriesParam = searchParams.get('categories');
+
+        // クエリのベースを作成
+        let query = supabase
           .from('lost_items')
           .select('id,name,description,image_url,found_location,found_date,status,created_at');
+
+        // 条件があればクエリに「フィルター」を追加していく
+
+        // 場所のフィルタ（"すべて" 以外が選ばれている場合）
+        if (locationParam && locationParam !== 'すべて') {
+          query = query.eq('found_location', locationParam);
+        }
+
+        // 日付のフィルタ
+        if (dateParam) {
+          query = query.eq('found_date', dateParam); 
+        }
+
+        // カテゴリ（種類）のフィルタ
+        if (categoriesParam) {
+          const categoriesArray = categoriesParam.split(',');
+          // nameカラムがカテゴリと一致するものを探す
+          query = query.in('name', categoriesArray);
+        }
+
+        // クエリを実行
+        const { data, error } = await query;
 
         if (error) throw error;
 
@@ -99,7 +127,9 @@ export default function SeachPage() {
     };
 
     fetchItems();
-  }, []);
+    
+    // searchParams が変わったら再検索するように依存配列に追加
+  }, [searchParams]);
 
   // 日付をタイムスタンプに変換
   const toTime = (s?: string) => {
