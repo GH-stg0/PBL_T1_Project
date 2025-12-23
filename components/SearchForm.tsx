@@ -144,9 +144,30 @@ export default function SearchForm() {
           onClick={() => {
             // ① 大元コードのログ出力は残す
             console.log("検索条件:", { categories, location, dateStr });
-            // ② 1つ目のコードの「ページ遷移」機能をここに統合
-            router.push("/seachpage");
-          }}
+
+          const params = new URLSearchParams();
+
+          // 発見場所: "すべて" 以外ならパラメータに追加
+          if (location && location !== "すべて") {
+            params.set("location", location);
+          }
+
+          // 日付: 入力があれば追加
+          if (dateStr) {
+            params.set("date", dateStr);
+          }
+
+          // カテゴリ: 配列のためカンマ区切りで文字列にする
+          if (categories.length > 0) {
+            params.set("categories", categories.join(","));
+          }
+
+          // ログで確認
+          console.log("移動先URL:", `/seachpage?${params.toString()}`);
+
+          // 作成したパラメータ付きのURLへ遷移
+          router.push(`/seachpage?${params.toString()}`);
+        }}
         >
           <SearchIcon className="w-5 h-5 text-gray-600" />
           <span className="text-gray-700 font-bold">この条件で検索</span>
